@@ -72,7 +72,6 @@ class Robot:
         )
 
     def routine(self):
-#        self.__msg(572297054, "Message from bot!")
         while True:
             try:
                 cmds = list(map(str, input().split()))
@@ -80,7 +79,7 @@ class Robot:
                 if cmds[1] != 'me':
                     _id = int(cmds[1])
                 else:
-                    _id = 572297054
+                    _id = your_id
                 fl = ''
                 if len(cmds) == 3:
                     fl = cmds[2]
