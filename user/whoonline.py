@@ -3,13 +3,13 @@
 import sys, os, requests
 import vk_api, json, time
 
-login = '+10000000000'
+login = 'telephone_number_as_string'
 password = 'password'
-token = '...' # not nessasary
 
 class User:
 	def __init__(self, i):
 		self.uid = i
+		self.name = ''
 		self.total = 0
 		self.online = 0
 def make_list(users):
@@ -27,31 +27,21 @@ class Robot:
 
     def __init__(self, log: str, pas: str):
         self.__session = requests.Session()
-        self.vk = vk_api.VkApi(log, pas, token)
+        self.vk = vk_api.VkApi(log, pas)
         self.vk.auth(token_only=True)
 
     #possible fields:
     # nickname, screen_name, sex, bdate, city, country, timezone,
     # photo_50, photo_100, photo_200_orig, has_mobile, contacts,
     # education, online, counters, relation, last_seen, status,
-    # can_write_private_message, can_see_all_posts, can_post, universities        
+    # can_write_private_message, can_see_all_posts, can_post, universities
     def __online(self, uid):
-        inf = self.vk.method(
-            'users.get', 
-            {
-                'user_ids': uid,
-                'fields': 'online'
-            }
-        )
-        inf = inf.split(',')
-        for item in inf:
-            if 'online' in item:
-                return item.split(': ')[1]
-        return 0
+        inf = self.__whois(uid, 'online')[0]
+        return inf['online']
 
     def __whois(self, uid, fields=''):
         return self.vk.method(
-            'users.get', 
+            'users.get',
             {
                 'user_ids': uid,
                 'fields': fields
@@ -59,18 +49,12 @@ class Robot:
         )
 
     def __name(self, uid):
-        inf = self.__whois(uid)
-        inf = inf.split(',')
-        ans = ''
-        for item in inf:
-            if ('last_name' in item) or ('first_name' in item):
-                ans += item.split(': ')[1]
-                ans += ' '
-        return ans
+        inf = self.__whois(uid)[0]
+        return inf['first_name'] + ' ' + inf['last_name']
 
     def __friends(self, uid, fields=''):
         return self.vk.method(
-            'friends.get', 
+            'friends.get',
             {
                 'user_id': uid,
                 'fields': fields
@@ -80,18 +64,25 @@ class Robot:
     def routine(self):
         watch = [
             #ids
-        ]
+	]
+
         usrs = make_list(watch)
+        for user in usrs:
+            user.name = self.__name(user.uid)
+
         while True:
-            time.sleep(60 * 5)
+            time.sleep(5)
+            os.system('clear')
             for user in usrs:
                 user.total += 5
                 if self.__online(user.uid) == 1:
-                    user.online += 5        
-            os.system('clear')
-            for user in usrs:
-                print(self.__name(user.uid), ': ', 100 * user.online / user.total, '% time online', sep='')
-                
+                    user.online += 5
+                print(
+                    user.name, ': ',
+                    100 * user.online / user.total,
+                    '% time online', sep=''
+                )
+
 def main(args):
     Robot(login, password).routine()
     return 0
