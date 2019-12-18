@@ -71,7 +71,7 @@ class Robot:
             user.name = self.__name(user.uid)
 
         while True:
-            time.sleep(5)
+            time.sleep(60 * 5)
             os.system('clear')
             for user in usrs:
                 user.total += 5
