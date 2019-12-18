@@ -7,11 +7,12 @@ login = 'telephone_number_as_string'
 password = 'password'
 
 class User:
-	def __init__(self, i):
-		self.uid = i
-		self.name = ''
-		self.total = 0
-		self.online = 0
+    def __init__(self, i):
+        self.uid = i
+        self.name = ''
+        self.total = 0
+        self.online = 0
+        self.now = False
 def make_list(users):
     res = []
     for u in users:
@@ -65,23 +66,39 @@ class Robot:
         watch = [
             #ids
 	]
-
+	
+        totaltime = 0
         usrs = make_list(watch)
         for user in usrs:
             user.name = self.__name(user.uid)
 
         while True:
             time.sleep(60 * 5)
+            totaltime += 5
             os.system('clear')
             for user in usrs:
                 user.total += 5
                 if self.__online(user.uid) == 1:
                     user.online += 5
+                    user.now = '*'
+                else:
+                    user.now = ' '
+                amnt = 100 * user.online / user.total
+                amnt = math.ceil(100 * amnt) / 100
                 print(
-                    user.name, ': ',
-                    100 * user.online / user.total,
-                    '% time online', sep=''
+                    user.name, (30 - len(user.name)) * ' ' ,
+                    user.now, ' : ',
+                    amnt, '%', (8 - len(str(amnt))) * ' ',
+                    'time online', sep=''
                 )
+            print()
+            print(
+                'total time: ',
+                 totaltime // (24 * 60), 'd, ',
+                 (totaltime % (24 * 60)) // 60, 'h, ',
+                 totaltime % 60, 'm', sep=''
+            )
+            print('* - online users');
 
 def main(args):
     Robot(login, password).routine()
