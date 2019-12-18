@@ -86,7 +86,7 @@ class Robot:
             time.sleep(60 * 5)
             for user in usrs:
                 user.total += 5
-                if (self.__online(user.uid) == 1)
+                if self.__online(user.uid) == 1:
                     user.online += 5        
             os.system('clear')
             for user in usrs:
