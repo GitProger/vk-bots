@@ -6,6 +6,9 @@ import vk_api, json, time
 login = 'telephone_number_as_string'
 password = 'password'
 
+def cur_date():
+    return datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
+
 class User:
     def __init__(self, i):
         self.uid = i
@@ -19,7 +22,6 @@ def make_list(users):
         res.append(User(u))
     return res
 
-
 class Robot:
     # vk is a vk api session
     @staticmethod
@@ -28,7 +30,7 @@ class Robot:
 
     def __init__(self, log: str, pas: str):
         self.__session = requests.Session()
-        self.vk = vk_api.VkApi(log, pas)
+        self.vk = vk_api.VkApi(log, pas, token)
         self.vk.auth(token_only=True)
 
     #possible fields:
@@ -39,6 +41,21 @@ class Robot:
     def __online(self, uid):
         inf = self.__whois(uid, 'online')[0]
         return inf['online']
+
+
+    def __many_online(self, uids):
+        inf = self.vk.method(
+            'users.get',
+            {
+                'user_ids': str(list(uids))[1:-1],
+                'fields': 'online'
+            }
+        )
+        res = dict()
+        for i in inf:
+            res[i['id']] = i['online']
+        return res 
+
 
     def __whois(self, uid, fields=''):
         return self.vk.method(
@@ -66,7 +83,6 @@ class Robot:
         watch = (
             #ids
 	)
-	
         totaltime = 0
         usrs = make_list(watch)
         for user in usrs:
@@ -76,28 +92,31 @@ class Robot:
             time.sleep(60 * 5)
             totaltime += 5
             os.system('clear')
+
+            onlineinfo = self.__many_online(watch)
             for user in usrs:
                 user.total += 5
-                if self.__online(user.uid) == 1:
+                if onlineinfo[user.uid] == 1: # self.__online(user.uid) == onlineinfo[user.uid]
                     user.online += 5
                     user.now = '*'
                 else:
                     user.now = ' '
                 amnt = 100 * user.online / user.total
-                amnt = math.ceil(100 * amnt) / 100
+                amnt = math.ceil(1000 * amnt) / 1000
                 print(
                     user.name, (30 - len(user.name)) * ' ' ,
                     user.now, ' : ',
-                    amnt, '%', (8 - len(str(amnt))) * ' ',
+                    amnt, '%', (9 - len(str(amnt))) * ' ',
                     'time online', sep=''
                 )
             print()
             print(
-                'total time: ',
+                'Total time: ',
                  totaltime // (24 * 60), 'd, ',
                  (totaltime % (24 * 60)) // 60, 'h, ',
                  totaltime % 60, 'm', sep=''
             )
+            print('Now:', cur_date())
             print('* - online users');
 
 def main(args):
