@@ -63,9 +63,9 @@ class Robot:
         )
 
     def routine(self):
-        watch = [
+        watch = (
             #ids
-	]
+	)
 	
         totaltime = 0
         usrs = make_list(watch)
