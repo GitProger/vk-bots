@@ -13,8 +13,8 @@ def cur_time():
     info = datetime.datetime.now()
     h = int(info.strftime("%H"))
     m = int(info.strftime("%M"))
-    s = int(info.strftime("%S"))
-    return (h, m, s)
+#    s = int(info.strftime("%S"))
+    return (h, m)
 
 class Lesson:
     def __init__(self, bh, bm, eh, em):
