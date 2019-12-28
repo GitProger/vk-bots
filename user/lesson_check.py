@@ -105,6 +105,19 @@ class Robot:
         inf = self.__whois(uid)[0]
         return inf['first_name'] + ' ' + inf['last_name']
 
+    def __many_names(self, uids):
+        inf = self.vk.method('users.get',
+            {
+                'user_ids': str(list(uids))[1:-1], #', '.join([str(x) for x in uids])
+            }
+        )
+        res = dict()
+        for i in inf:
+            res[i['id']] = i['first_name'] + ' ' + i['last_name']
+        return res
+        
+    
+    
     def __friends(self, uid, fields=''):
         return self.vk.method(
             'friends.get',
@@ -115,8 +128,25 @@ class Robot:
         )
 
     def routine(self):
-        pass
+        global pts_ids_list
+        INTERVAL = 0.5
+        totaltime = 0
+        usrs = make_list(pts_ids_list)
+        names = self.__many_names(pts_ids_list)
+        for user in usrs:
+            user.name = names[user.uid]
 
+        while True:
+            time.sleep(60 * INTERVAL)
+            totaltime += INTERVAL
+
+            onlineinfo = self.__many_online(pts_ids_list)
+            for user in usrs:
+                user.total += INTERVAL
+                if onlineinfo[user.uid] == 1: # self.__online(user.uid) == onlineinfo[user.uid]
+                    user.online += INTERVAL
+
+                    
 def main(args):
     Robot(login, password).routine()
     return 0
