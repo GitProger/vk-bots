@@ -4,8 +4,9 @@ import sys, os, requests
 import vk_api, json, time, datetime
 import math
 
-login = 'telephone_number_as_a_string'
-password = 'password'
+login = '+79811203733'
+password = '#1$1%9@6%35'
+token = '5511f03bf65c185d47d085904ad239bb7d678beb32caebfce81ef76d90d9727a32e8a26d3b1283b486f20'
 
 def cur_date():
     return datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
@@ -29,14 +30,23 @@ School = [
     Lesson(13, 40  ,  14, 20),
 ]
 
+def check_is_online(time):
+    global School
+    t = time[0] * 60 + time[1]
+    for l in School:
+        if (l.begin <= t) and (t < l.end):
+            return True
+    return False
+
+def log_crime(text):
+    f = open("log.txt", "a")
+    f.write(text)
+    f.close()
 
 class User:
     def __init__(self, i):
         self.uid = i
         self.name = ''
-        self.total = 0
-        self.online = 0
-        self.now = False
         
 villains = []
 
@@ -69,17 +79,17 @@ pts_ids_list = [
 
 
 
-class Robot:
+class BasicRobot:
     def __init__(self, log: str, pas: str):
         self.__session = requests.Session()
         self.vk = vk_api.VkApi(log, pas, token)
         self.vk.auth(token_only=True)
 
-    def __online(self, uid):
+    def _online(self, uid):
         inf = self.__whois(uid, 'online')[0]
         return inf['online']
 
-    def __many_online(self, uids):
+    def _many_online(self, uids):
         inf = self.vk.method(
             'users.get',
             {
@@ -92,7 +102,7 @@ class Robot:
             res[i['id']] = i['online']
         return res
 
-    def __whois(self, uid, fields=''):
+    def _whois(self, uid, fields=''):
         return self.vk.method(
             'users.get',
             {
@@ -101,11 +111,11 @@ class Robot:
             }
         )
 
-    def __name(self, uid):
+    def _name(self, uid):
         inf = self.__whois(uid)[0]
         return inf['first_name'] + ' ' + inf['last_name']
 
-    def __many_names(self, uids):
+    def _many_names(self, uids):
         inf = self.vk.method('users.get',
             {
                 'user_ids': str(list(uids))[1:-1], #', '.join([str(x) for x in uids])
@@ -115,10 +125,8 @@ class Robot:
         for i in inf:
             res[i['id']] = i['first_name'] + ' ' + i['last_name']
         return res
-        
-    
-    
-    def __friends(self, uid, fields=''):
+
+    def _friends(self, uid, fields=''):
         return self.vk.method(
             'friends.get',
             {
@@ -126,29 +134,41 @@ class Robot:
                 'fields': fields
             }
         )
-
+        
     def routine(self):
+        pass
+
+
+class LessonRobot(BasicRobot):
+    def routine(self):
+        def make_list(users):
+            return [User(u) for u in users]
         global pts_ids_list
         INTERVAL = 0.5
-        totaltime = 0
+        print("Initialized.")
+
         usrs = make_list(pts_ids_list)
-        names = self.__many_names(pts_ids_list)
+        names = self._many_names(pts_ids_list)
         for user in usrs:
             user.name = names[user.uid]
 
         while True:
             time.sleep(60 * INTERVAL)
-            totaltime += INTERVAL
-
-            onlineinfo = self.__many_online(pts_ids_list)
+            onlineinfo = self._many_online(pts_ids_list)
+            curtime = cur_time()
             for user in usrs:
-                user.total += INTERVAL
-                if onlineinfo[user.uid] == 1: # self.__online(user.uid) == onlineinfo[user.uid]
-                    user.online += INTERVAL
+                if onlineinfo[user.uid] == 1:
+                     if check_is_online(curtime):
+                         log_crime(user.name + " " + str(curtime[0]) + ":" + str(curtime[1]))
 
-                    
 def main(args):
-    Robot(login, password).routine()
+    try:
+        LessonRobot(login, password).routine()
+    except Exception as e:
+        print("An exception occured: ", type(e))
+        print("Info: " + 44 * "=" + "\n", e, "\n" + "=" * 50)
+    finally:
+        print("Exited.")
     return 0
 if __name__ == '__main__':
     exit(main(sys.argv))
