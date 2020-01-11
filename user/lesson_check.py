@@ -4,9 +4,8 @@ import sys, os, requests
 import vk_api, json, time, datetime
 import math
 
-login = '+79811203733'
-password = '#1$1%9@6%35'
-token = '5511f03bf65c185d47d085904ad239bb7d678beb32caebfce81ef76d90d9727a32e8a26d3b1283b486f20'
+login = ''
+password = ''
 
 def cur_date():
     return datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
