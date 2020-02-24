@@ -37,26 +37,18 @@ class ChatbotBase:
 
 
     def process(self, event):
-        if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-            print(event.user_id, " (" + self.who(event.user_id) + "): ", event.text, sep="")
+        pass
 
-
-            self.vk.messages.send(
-                user_id = event.user_id,
-                message = 'Привет, ' + self.who(event.user_id),
-                random_id = random.randint(0, 2 ** 24),
-            )
-
-            '''
-            if event.text.find('hi') != -1:
-                if event.from_user:
-                    self.vk.messages.send(
-                        user_id=event.user_id,
-                        message='Hello'
-		            )
-                elif event.from_chat:
-                    self.vk.messages.send(
-                        chat_id=event.chat_id,
-                        message='Hello'
-		            )
-            '''
+        '''
+        if event.text.find('hi') != -1:
+            if event.from_user:
+                self.vk.messages.send(
+                    user_id=event.user_id,
+                    message='Hello'
+		        )
+            elif event.from_chat:
+                self.vk.messages.send(
+                    chat_id=event.chat_id,
+                    message='Hello'
+		         )
+        '''
