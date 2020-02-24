@@ -7,7 +7,7 @@ import math
 from vk_api.longpoll import VkLongPoll, VkEventType
 from rbase import ChatbotBase
 
-token = 'your_access_token'
+token = '22208832096fb3b7036116cab6b409de2bca808eb0b292997ed5641fb0683b1efd59b6f129b5a101287bb'
 
 def cur_time():
     return datetime.datetime.now().strftime("%H:%M")
@@ -40,19 +40,12 @@ class MyBot(ChatbotBase):
                    Это тестовая версия бота, пока ты можешь только:
                     * спросить сколько времени,
                     * как тебя зовут
-                    * команда chg:
-                    -- * _По умолчанию выключена_.
-                    -- * Переключает режим.
-                    -- * Если включена, то чтобы я ответил на сообщение 
-                    -- | ко мне надо обратиться "Бот" или "Bot".
+                    | ко мне надо обратиться "Бот" или "Bot".
                    '''
         elif re.search("(как\s.*меня\s.*зовут|мо(е|ё).*\sимя|кто\s+я|я\s*кто)", ptxt):
             return "Тебя зовут " + uname + "."
         elif re.search("привет", ptxt):
             return "Привет, " + uname + "!"
-        elif re.search("chg\.?$", ptxt):
-            self.mode ^= 1
-            return "Ок"
         else:
             return get_answer(ptxt)
 
@@ -62,15 +55,8 @@ class MyBot(ChatbotBase):
             self.log(event)
             uid = event.user_id
             txt = event.text
-            if self.ap_mode:
-                if self.was_called(txt):
-                    self.send(uid, self.parse(txt, event))
-            else:
+            if self.was_called(txt):
                 self.send(uid, self.parse(txt, event))
-
-    def __init__(self, tok):
-        ChatbotBase.__init__(self, tok)
-        self.ap_mode = 0
 
 bot = MyBot(token)
 bot.routine()
