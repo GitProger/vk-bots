@@ -13,12 +13,29 @@ class ChatbotBase:
         self.vk_sess = vk_api.VkApi(token=tok)
         self.longpoll = VkLongPoll(self.vk_sess)
         self.vk = self.vk_sess.get_api()
+        self.appeals = ["Bot", "Бот"]
 
     def was_called(self, message):
         for name in self.appeals:
-            if bool(re.match("^" + name + "\s*,", message)):
+            if bool(re.match("^" + name + "\s*,", message.lower())):
                 return True
         return False
+
+    def send(self, uid, text):
+        self.vk.messages.send(
+            user_id = uid,
+            message = text,
+            random_id = random.randint(0, 2 ** 24),
+        )
+
+    def who(self, uid):
+        json = self.vk.users.get(user_ids=uid, fields='')
+        inf = json[0]
+        return inf['first_name']
+    def who_full(self, uid):
+        json = self.vk.users.get(user_ids=uid, fields='')
+        inf = json[0]
+        return inf['first_name'] + ' ' + inf['last_name']
 
     def solve_exc(self, e):
         print("Error:", e)
@@ -30,25 +47,5 @@ class ChatbotBase:
             except Exception as e:
                 self.solve_exc(e)
 
-    def who(self, uid):
-        json = self.vk.users.get(user_ids=uid, fields='')
-        inf = json[0]
-        return inf['first_name'] #+ ' ' + inf['last_name']
-
-
     def process(self, event):
         pass
-
-        '''
-        if event.text.find('hi') != -1:
-            if event.from_user:
-                self.vk.messages.send(
-                    user_id=event.user_id,
-                    message='Hello'
-		        )
-            elif event.from_chat:
-                self.vk.messages.send(
-                    chat_id=event.chat_id,
-                    message='Hello'
-		         )
-        '''
