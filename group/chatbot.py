@@ -29,7 +29,7 @@ class MyBot(ChatbotBase):
     def parse(self, txt, conf):
         ptxt = txt.lower()
         uname = self.who(conf.user_id)
-        if re.search("врем((я)|(ени))", ptxt):
+        if re.search("врем(я|ени)", ptxt):
             return "Сейчас " + cur_time() + "."
         elif ptxt == "help":
             return '''
@@ -37,7 +37,7 @@ class MyBot(ChatbotBase):
                     * спросить сколько времени,
                     * как тебя зовут
                    '''
-        elif re.search("(как\s.*меня\s.*зовут|имя)", ptxt):
+        elif re.search("(как\s.*меня\s.*зовут|мо(е|ё).*\sимя|кто\s+я|я\s*кто)", ptxt):
             return "Тебя зовут " + uname + "."
         else:
             return "Привет, " + uname + "!"
