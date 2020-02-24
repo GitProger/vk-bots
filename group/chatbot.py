@@ -15,7 +15,10 @@ def cur_time():
 
 class MyBot(ChatbotBase):
     def log(self, event):
-        print(event.user_id, " (" + self.who(event.user_id) + "): ", event.text, sep="")
+        json = self.vk.users.get(user_ids=uid, fields='')
+        inf = json[0]
+        n = inf['first_name'] + ' ' + inf['last_name']
+        print(event.user_id, " (" + n + "): ", event.text, sep="")
     def send(self, uid, text):
         self.vk.messages.send(
             user_id = uid,
