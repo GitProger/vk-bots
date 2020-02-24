@@ -84,12 +84,19 @@ class ChatbotBase(BasicSessionResponder):
                 return True
         return False
 
+    def solve_exc(self, e):
+        pass
+
+    def process(self, event):
+        if event.type == VkEventType.MESSAGE_NEW:
+            uid = event.used_id
+            txt = event.text
+            if self.was_called(txt) != -1:
+                self.send(uid, 'msg')
+
     def routine(self):
         for event in self.longpoll.listen():
-            if event.type == VkEventType.MESSAGE_NEW:
-                uid = event.used_id
-                txt = event.text
-                if self.was_called(txt) != -1:
-                    self.send(uid, 'msg')
-
-
+            try:
+                self.process(event)
+            except Exception as e:
+                self.solve_exc(e)
