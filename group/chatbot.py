@@ -9,16 +9,42 @@ from rbase import ChatbotBase
 
 token = 'your_access_token'
 
+def cur_time():
+    return datetime.datetime.now().strftime("%H:%M")
+
+
 class MyBot(ChatbotBase):
+    def log(self, event):
+        print(event.user_id, " (" + self.who(event.user_id) + "): ", event.text, sep="")
+    def send(self, uid, text):
+        self.vk.messages.send(
+            user_id = uid,
+            message = text,
+            random_id = random.randint(0, 2 ** 24),
+        )
+
+    def parse(self, txt, conf):
+        ptxt = txt.lower()
+        uname = self.who(conf.user_id)
+        if re.search("врем((я)|(ени))", ptxt):
+            return "Сейчас " + cur_time() + "."
+        elif ptxt == "help":
+            return '''
+                   Это тестовая версия бота, пока ты можешь только:
+                    * спросить сколько времени,
+                    * как тебя зовут
+                   '''
+        elif re.search("(как\s.*меня\s.*зовут|имя)", ptxt):
+            return "Тебя зовут " + uname + "."
+        else:
+            return "Привет, " + uname + "!"
+            
     def process(self, event):
         if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-            print(event.user_id, " (" + self.who(event.user_id) + "): ", event.text, sep="")
-
-            self.vk.messages.send(
-                user_id = event.user_id,
-                message = 'Привет, ' + self.who(event.user_id),
-                random_id = random.randint(0, 2 ** 24),
-            )	
+            self.log(event)
+            uid = event.user_id
+            txt = event.text
+            self.send(uid, self.parse(txt, event))            
 
 bot = MyBot(token)
 bot.routine()
