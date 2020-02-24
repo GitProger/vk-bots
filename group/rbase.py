@@ -17,7 +17,8 @@ class ChatbotBase:
 
     def was_called(self, message):
         for name in self.appeals:
-            if bool(re.match("^" + name + "\s*,", message.lower())):
+            if re.match("^" + name + "\s*,", message) \
+                    or re.match("^" + name.lower() + "\s*,", message):
                 return True
         return False
 
