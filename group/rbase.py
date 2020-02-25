@@ -7,6 +7,8 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 
 def list_to_string(lst):
     return ', '.join(map(str, lst))
+def jsonprint(jsn):
+    print(json.dumps(jsn, sort_keys=True, ensure_ascii=False, indent=4))
 
 class ChatbotBase:
     def __init__(self, tok):
@@ -30,13 +32,11 @@ class ChatbotBase:
         )
 
     def who(self, uid):
-        json = self.vk.users.get(user_ids=uid, fields='')
-        inf = json[0]
-        return inf['first_name']
+        jsn = self.vk.users.get(user_ids=uid, fields='')[0]
+        return jsn['first_name']
     def who_full(self, uid):
-        json = self.vk.users.get(user_ids=uid, fields='')
-        inf = json[0]
-        return inf['first_name'] + ' ' + inf['last_name']
+        jsn = self.vk.users.get(user_ids=uid, fields='')[0]
+        return jsn['first_name'] + ' ' + jsn['last_name']
 
     def solve_exc(self, e):
         print("[ERR] ", type(e)," ", e, sep="")
