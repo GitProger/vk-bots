@@ -20,6 +20,7 @@ def gen_table():
         "спасибо"                                      : "Пожалуйста",
         "пока"                                         : "Пока(",
         "((ты(\s|\s.*\s)кто)|(как\sтебя\sзовут))"      : "Я жираф)",
+        "((кто(\s|\s.*\s)ты)|(тебя\sкак\sзовут))"      : "Я жираф)",
         ":\)"                                          : ":)",
         ":\("                                          : ":(",
         "так$"                                         : "Да?",
@@ -27,6 +28,7 @@ def gen_table():
         "(х(о|а)-?)+"                                  : ";)",
         "(ты)?\s*(лох|дурак|д(е|и)бил|д(э|е)бик)"      : ":'(",
         "прости|извини"                                : "Ничего)",
+        "как\s+.*\s*дела"                              : "Хорошо.",
     }
 
 def get_answer(text):
@@ -64,6 +66,7 @@ class MyBot(ChatbotBase):
             uid = self.search(who, user)
         user = self.who_full(uid)
         info = self.api.users.get(user_ids=uid, fields="online, last_seen")[0]
+
         if info["online"]:
             return user + " онлайн."
         else:
@@ -92,15 +95,18 @@ class MyBot(ChatbotBase):
             self.like_avatar(conf.user_id)
             return "Хорошо)"
 
-        elif re.search("когда\sбыл", ptxt) or re.search("когда\sзаходил", ptxt) :
+        elif re.search("когда\sбыл", ptxt) or re.search("когда\sзаходил", ptxt):
             def get(key):
                 nonlocal ptxt, conf
-                inter = re.search("(?<=" + key + ").*(?=[\S\W])", ptxt)
+                inter = re.search("(?<=" + key + ").*", ptxt)
                 if not inter:
                     return None
                 inter = inter.span()
                 wanted = txt[inter[0]:inter[1]]
+                while re.match("\W", wanted[-1]):
+                    wanted = wanted[:-1]
                 return self.last_time(conf.user_id, wanted)
+
             for k in ["когда\sбыла\s", "когда\sбыл\s", "когда\sзаходила\s", "когда\sзаходил\s"]:
                 if get(k):
                     return get(k)
