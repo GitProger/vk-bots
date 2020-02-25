@@ -5,9 +5,12 @@ import sys, os, requests, re, random
 import vk_api, json, time, datetime
 import math
 from vk_api.longpoll import VkLongPoll, VkEventType
-from rbase import ChatbotBase
+from rbase import *
 
-token = '22208832096fb3b7036116cab6b409de2bca808eb0b292997ed5641fb0683b1efd59b6f129b5a101287bb'
+login = 'admin`s login'       # some methods (for instance 'likes.*') are not avaliable with group session
+password = 'admin`s password' # so, these params requiered for warking with another sessions from the admin`s account
+
+token = 'group_access_token'
 
 def cur_time():
     return datetime.datetime.now().strftime("%H:%M")
@@ -23,6 +26,7 @@ def gen_table():
         "кста$"                                        : "?",
         "(х(о|а)-?)+"                                  : ";)",
         "(ты)?\s*(лох|дурак|д(е|и)бил|д(э|е)бик)"      : ":'(",
+        "прости|извини"                                : "Ничего)",
     }
 
 def get_answer(text):
@@ -33,9 +37,22 @@ def get_answer(text):
     return "Не понял запроса."
 
 class MyBot(ChatbotBase):
+    def __init__(self, tok, log, pas):
+        ChatbotBase.__init__(self, tok)
+        self.api = vk_api.VkApi(log, pas)
+        self.api.auth(token_only=True)
+        self.api = self.api.get_api()
+
     def log(self, event):
         i = event.user_id
-        print(i, " (", self.who_full(i), "): ", event.text, sep="")
+        print("[MSG] [id", i, " (", self.who_full(i), ")]: ", event.text, sep="")
+    def like_avatar(self, uid):
+        ava = self.vk.users.get(user_ids=uid, fields="photo_id")[0]["photo_id"]
+        self.api.likes.add(
+            owner_id=uid,
+            item_id=ava[ava.index("_") + 1:],
+            type="photo",
+        )
 
     def parse(self, txt, conf):
         ptxt = txt.lower()
@@ -54,9 +71,11 @@ class MyBot(ChatbotBase):
             return "Тебя зовут " + uname + "."
         elif re.search("привет", ptxt):
             return "Привет, " + uname + "!"
+        elif re.search("(лайк.*\sаву?|аву?.*\sлайк)", ptxt):
+            self.like_avatar(conf.user_id)
+            return "Хорошо)"
         else:
             return get_answer(ptxt)
-
 
     def process(self, event):
         if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
@@ -66,6 +85,7 @@ class MyBot(ChatbotBase):
             if self.was_called(txt):
                 self.send(uid, self.parse(txt, event))
 
-bot = MyBot(token)
+bot = MyBot(token, login, password)
 bot.routine()
 
+# chg убрал - так как меняется настройка бота для вообще всех пользователей, а не только для того с которым общается робот
