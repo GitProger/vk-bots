@@ -12,9 +12,6 @@ password = 'admin`s password' # so, these params requiered for warking with anot
 
 token = 'group_access_token'
 
-def cur_time():
-    return datetime.datetime.now().strftime("%H:%M")
-
 def gen_table():
     return {
         "спасибо"                                      : "Пожалуйста",
@@ -54,6 +51,21 @@ class MyBot(ChatbotBase):
             type="photo",
         )
 
+    def search(self, uid, fr_name): #in friends list
+        inf = self.api.friends.search(user_id=uid, q=fr_name)["items"]
+        return int(inf[0]["id"])
+    def last_time(self, who, user):
+        if user.isdigit():
+            uid = int(user)
+        else:
+            uid = self.search(who, user)
+        info = self.api.users.get(user_ids=uid, fields="online, last_seen")[0]
+        jsonprint(info)
+        if info["online"]:
+            return user + " онлайн."
+        else:
+            return user + " был(а) в " + time.ctime(info["last_seen"]["time"]) + "."
+
     def parse(self, txt, conf):
         ptxt = txt.lower()
         uname = self.who(conf.user_id)
@@ -63,17 +75,33 @@ class MyBot(ChatbotBase):
             return '''
                    Это тестовая версия бота, пока ты можешь только:
                     * спросить сколько времени,
+                    * спросить как тебя зовут
                     * попросить лайкнуть аву
-                   
-                   __ ко мне надо обратиться "Бот" или "Bot".
+                    * спросить когда другой ползователь (должен быть другом) был онлайн
+
+                    ко мне надо обратиться "Бот" или "Bot".
                    '''
-        elif re.search("(как\s.*меня\s.*зовут|мо(е|ё).*\sимя|кто\s+я|я\s*кто)", ptxt):
+        elif re.search("(как\s.*меня\s.*зовут|мо(е|ё).*\sимя|кто\s+я|я\s+кто)", ptxt):
             return "Тебя зовут " + uname + "."
         elif re.search("привет", ptxt):
             return "Привет, " + uname + "!"
         elif re.search("(лайк.*\sаву?|аву?.*\sлайк)", ptxt):
             self.like_avatar(conf.user_id)
             return "Хорошо)"
+
+        elif re.search("когда\sбыл", ptxt) or re.search("когда\sзаходил", ptxt) :
+            def get(key):
+                nonlocal ptxt, conf
+                inter = re.search("(?<=" + key + ").*", ptxt).span()
+                if not inter:
+                    return None
+                inter = inter.span()
+                wanted = txt[inter[0]:inter[1]]
+                return self.last_time(conf.user_id, wanted)
+            for k in ["когда\sбыл", "когда\sбыла", "когда\sзаходил", "когда\sзаходила"]:
+                if get(k):
+                    return get(k)
+            return "Error"
         else:
             return get_answer(ptxt)
 
@@ -82,7 +110,7 @@ class MyBot(ChatbotBase):
             self.log(event)
             uid = event.user_id
             txt = event.text
-            if self.was_called(txt):
+            if self.was_called(txt) or txt.lower() == "help":
                 self.send(uid, self.parse(txt, event))
 
 bot = MyBot(token, login, password)
