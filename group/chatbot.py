@@ -12,6 +12,9 @@ password = 'admin`s password' # so, these params requiered for warking with anot
 
 token = 'group_access_token'
 
+def cur_time():
+    return datetime.datetime.now().strftime("%H:%M")
+
 def gen_table():
     return {
         "спасибо"                                      : "Пожалуйста",
@@ -92,13 +95,13 @@ class MyBot(ChatbotBase):
         elif re.search("когда\sбыл", ptxt) or re.search("когда\sзаходил", ptxt) :
             def get(key):
                 nonlocal ptxt, conf
-                inter = re.search("(?<=" + key + ").*", ptxt).span()
+                inter = re.search("(?<=" + key + ").*(?=[\S\W])", ptxt)
                 if not inter:
                     return None
                 inter = inter.span()
                 wanted = txt[inter[0]:inter[1]]
                 return self.last_time(conf.user_id, wanted)
-            for k in ["когда\sбыл", "когда\sбыла", "когда\sзаходил", "когда\sзаходила"]:
+            for k in ["когда\sбыла", "когда\sбыл", "когда\sзаходила", "когда\sзаходил"]:
                 if get(k):
                     return get(k)
             return "Error"
