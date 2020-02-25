@@ -62,8 +62,8 @@ class MyBot(ChatbotBase):
             uid = int(user)
         else:
             uid = self.search(who, user)
+        user = self.who_full(uid)
         info = self.api.users.get(user_ids=uid, fields="online, last_seen")[0]
-        jsonprint(info)
         if info["online"]:
             return user + " онлайн."
         else:
@@ -101,7 +101,7 @@ class MyBot(ChatbotBase):
                 inter = inter.span()
                 wanted = txt[inter[0]:inter[1]]
                 return self.last_time(conf.user_id, wanted)
-            for k in ["когда\sбыла", "когда\sбыл", "когда\sзаходила", "когда\sзаходил"]:
+            for k in ["когда\sбыла\s", "когда\sбыл\s", "когда\sзаходила\s", "когда\sзаходил\s"]:
                 if get(k):
                     return get(k)
             return "Error"
