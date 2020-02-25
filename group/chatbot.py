@@ -59,7 +59,7 @@ class MyBot(ChatbotBase):
         uname = self.who(conf.user_id)
         if re.search("врем(я|ени)", ptxt):
             return "Сейчас " + cur_time() + "."
-        elif ptxt == "help":
+        elif re.search("help", ptxt):
             return '''
                    Это тестовая версия бота, пока ты можешь только:
                     * спросить сколько времени,
