@@ -39,7 +39,7 @@ class ChatbotBase:
         return inf['first_name'] + ' ' + inf['last_name']
 
     def solve_exc(self, e):
-        print("Error:", e)
+        print("[ERR] ", type(e)," ", e, sep="")
 
     def routine(self):
         for event in self.longpoll.listen():
