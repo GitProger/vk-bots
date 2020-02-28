@@ -31,12 +31,14 @@ class ChatbotBase:
             random_id = random.randint(0, 2 ** 24),
         )
 
-    def who(self, uid):
+    def who(self, uid, key=''):
         jsn = self.vk.users.get(user_ids=uid, fields='')[0]
-        return jsn['first_name']
-    def who_full(self, uid):
-        jsn = self.vk.users.get(user_ids=uid, fields='')[0]
-        return jsn['first_name'] + ' ' + jsn['last_name']
+        if key == 'name':
+            return jsn['first_name']
+        elif key == 'surname':
+            return jsn['last_name']
+        else:
+            return jsn['first_name'] + ' ' + jsn['last_name']
 
     def solve_exc(self, e):
         print("[ERR] ", type(e)," ", e, sep="")
