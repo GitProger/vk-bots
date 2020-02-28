@@ -21,14 +21,19 @@ def gen_table():
         "пока"                                         : "Пока(",
         "((ты(\s|\s.*\s)кто)|(как\sтебя\sзовут))"      : "Я жираф)",
         "((кто(\s|\s.*\s)ты)|(тебя\sкак\sзовут))"      : "Я жираф)",
-        ":\)"                                          : ":)",
-        ":\("                                          : ":(",
-        "так$"                                         : "Да?",
-        "кста$"                                        : "?",
-        "(х(о|а)-?)+"                                  : ";)",
+        ":?\)"                                         : ":-)",
+        ":?\("                                         : ":-(",
+        "так\W?$"                                      : "Да?",
+        "кста\W?$"                                     : "?",
+        "(а|о)?(х(о|а)-?)+"                            : ";-)",
         "(ты)?\s*(лох|дурак|д(е|и)бил|д(э|е)бик)"      : ":'(",
-        "прости|извини"                                : "Ничего)",
+        "ты\s.*не\s.*(лох|дурак|д(е|и)бил|д(э|е)бик)"  : "Ещё бы",
+        "иди\s+на\S"                                   : "Обидно кста",
+        "прости|извини|сорян"                          : "Ничего)",
         "как\s+.*\s*дела"                              : "Хорошо.",
+        "((как|помоги).*\sботать|заботай)"             : "Иди нафиг, сам ботай.",
+        "э+й*"                                         : "А вот так вот.",
+        "тебя.*зафиг"                                  : "Ты тупой лох.",        
     }
 
 def get_answer(text):
@@ -47,7 +52,7 @@ class MyBot(ChatbotBase):
 
     def log(self, event):
         i = event.user_id
-        print("[MSG] [id", i, " (", self.who_full(i), ")]: ", event.text, sep="")
+        print("[MSG] [id", i, " (", self.who(i), ")]: ", event.text, sep="")
     def like_avatar(self, uid):
         ava = self.vk.users.get(user_ids=uid, fields="photo_id")[0]["photo_id"]
         self.api.likes.add(
@@ -64,7 +69,7 @@ class MyBot(ChatbotBase):
             uid = int(user)
         else:
             uid = self.search(who, user)
-        user = self.who_full(uid)
+        user = self.who(uid)
         info = self.api.users.get(user_ids=uid, fields="online, last_seen")[0]
 
         if info["online"]:
@@ -74,7 +79,6 @@ class MyBot(ChatbotBase):
 
     def parse(self, txt, conf):
         ptxt = txt.lower()
-        uname = self.who(conf.user_id)
         if re.search("врем(я|ени)", ptxt):
             return "Сейчас " + cur_time() + "."
         elif re.search("help", ptxt):
@@ -86,19 +90,23 @@ class MyBot(ChatbotBase):
                     * спросить когда другой ползователь (должен быть другом) был онлайн
 
                     ко мне надо обратиться "Бот" или "Bot".
+                    например "бот, скажи время"
                    '''
         elif re.search("(как\s.*меня\s.*зовут|мо(е|ё).*\sимя|кто\s+я|я\s+кто)", ptxt):
-            return "Тебя зовут " + uname + "."
+            return "Тебя зовут " + self.who(conf.user_id, key='name') + "."
         elif re.search("привет", ptxt):
-            return "Привет, " + uname + "!"
+            return "Привет, " + self.who(conf.user_id, key='name') + "!"
         elif re.search("(лайк.*\sаву?|аву?.*\sлайк)", ptxt):
             self.like_avatar(conf.user_id)
             return "Хорошо)"
+        elif re.search("когда.*был", ptxt) or re.search("когда.*заходил", ptxt):
 
-        elif re.search("когда\sбыл", ptxt) or re.search("когда\sзаходил", ptxt):
             def get(key):
                 nonlocal ptxt, conf
                 inter = re.search("(?<=" + key + ").*", ptxt)
+                if not inter:
+                    f, s = key.split("\s")[:2]
+                    inter = re.search("(?<=" + f + ").*(?=" + s + ")", ptxt)
                 if not inter:
                     return None
                 inter = inter.span()
@@ -106,11 +114,11 @@ class MyBot(ChatbotBase):
                 while re.match("\W", wanted[-1]):
                     wanted = wanted[:-1]
                 return self.last_time(conf.user_id, wanted)
-
             for k in ["когда\sбыла\s", "когда\sбыл\s", "когда\sзаходила\s", "когда\sзаходил\s"]:
                 if get(k):
                     return get(k)
             return "Error"
+
         else:
             return get_answer(ptxt)
 
