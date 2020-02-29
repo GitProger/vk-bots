@@ -9,6 +9,8 @@ def list_to_string(lst):
     return ', '.join(map(str, lst))
 def jsonprint(jsn):
     print(json.dumps(jsn, sort_keys=True, ensure_ascii=False, indent=4))
+def get_json(jsn):
+    return json.dumps(jsn, sort_keys=True, ensure_ascii=False, indent=4)
 
 class ChatbotBase:
     def __init__(self, tok):
