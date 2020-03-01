@@ -1,10 +1,12 @@
 #!/usr/bin/env perl
 
-if ($ARGV[0] eq "-r") {
+sub main {
+    my $par = shift;
     for (;;) {
-        system("python3 ~/Документы/vkbots/python/chat/chatbot.py&");
-        sleep(60 * 40);
+        system("python3 ~/Документы/vkbots/python/chat/chatbot.py");
+        last if ($par ne "r");
     }
-} else {
-    system("python3 ~/Документы/vkbots/python/chat/chatbot.py");
+    return 0;
 }
+
+exit(main(@ARGV));
